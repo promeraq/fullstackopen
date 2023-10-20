@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: "https://render-test-qk2i.onrender.com/",
         changeOrigin: true,
       },
     },
