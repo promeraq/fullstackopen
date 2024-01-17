@@ -32,6 +32,12 @@ app.use(middleware.tokenExtractor);
 app.use("/api/users", middleware.userExtractor, usersRouter);
 app.use("/api/login", loginRouter);
 
+// added only if we're in test mode
+if (process.env.NODE_ENV === "test") {
+  const testingRouter = require("./controllers/testing");
+  app.use("/api/testing", testingRouter);
+}
+
 // handler of requests with unknown endpoint
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

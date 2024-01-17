@@ -1,5 +1,5 @@
 # Full Stack Open
 
-### Part 3. Programming a server with NodeJS and Express
+### Part 4. Testing Express servers, user administration
 
 Link: https://render-test-qk2i.onrender.com

@@ -41,13 +41,36 @@ const tokenExtractor = (request, response, next) => {
   next();
 };
 
-const userExtractor = async (request, response, next) => {
+/* const userExtractor = async (request, response, next) => {
   const decodedToken = jwt.verify(request.token, process.env.SECRET);
   if (!decodedToken.id) {
     return response.status(401).json({ error: "token invalid" });
   }
   const user = await User.findById(decodedToken.id);
   request.user = user;
+  next();
+};
+ */
+
+const userExtractor = async (request, response, next) => {
+  const authorization = request.get("authorization");
+  console.log("authorization", authorization);
+  if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+    const decodedToken = jwt.verify(
+      authorization.replace("bearer ", ""),
+      process.env.SECRET
+    );
+    console.log("decodedToken", decodedToken);
+    if (decodedToken) {
+      request.user = await User.findById(decodedToken.id);
+    }
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: "token invalid" });
+    }
+  } else {
+    return null;
+  }
+
   next();
 };
 

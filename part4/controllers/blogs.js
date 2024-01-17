@@ -1,5 +1,6 @@
 const Blog = require("../models/blog");
 const blogsRouter = require("express").Router();
+const { userExtractor } = require("../utils/middleware");
 
 blogsRouter.get("/", async (request, response) => {
   const result = await Blog.find({}).populate("user", {
@@ -18,8 +19,8 @@ blogsRouter.get("/:id", async (request, response) => {
   return response.json(person);
 });
 
-blogsRouter.post("/", async (request, response) => {
-  const { title, url, author, likes, user } = request.body;
+blogsRouter.post("/", userExtractor, async (request, response) => {
+  const { title, url, author, likes } = request.body;
   if (await Blog.exists({ title })) {
     return response.status(400).json({ error: "title must be unique" });
   } else if (title === undefined) {
@@ -27,7 +28,7 @@ blogsRouter.post("/", async (request, response) => {
   } else if (url === undefined) {
     return response.status(400).json({ error: "author missing" });
   }
-
+  const user = request.user;
   const blog = new Blog({
     title: title,
     url: url,
@@ -37,19 +38,17 @@ blogsRouter.post("/", async (request, response) => {
   });
 
   const savedBlog = await blog.save();
-  user.blogs = user.blogs.concat(savedBlog._id);
+  user.blogs = user.blogs.concat(savedBlog.id);
   await user.save();
   response.status(201).json(savedBlog);
 });
 
-blogsRouter.delete("/:id", async (request, response) => {
+blogsRouter.delete("/:id", userExtractor, async (request, response) => {
   const user = request.user;
   const blog = await Blog.findById(request.params.id);
   if (!blog) {
     return response.status(404).json({ error: "blog not found" });
   }
-  console.log("ids");
-  console.log(user.toString());
   if (user.id.toString() !== blog.user.toString()) {
     return response.status(401).json({ error: "user invalid" });
   }
